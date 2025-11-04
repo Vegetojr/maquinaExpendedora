@@ -1,0 +1,206 @@
+/* --- Estilos Generales --- */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+h1, h2, h3 { text-align: center; }
+.alfabeto { color: #555; font-style: italic; max-width: 600px; text-align: center;}
+
+/* --- Controles Globales --- */
+.controles-globales {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.btn-moneda, .btn-devolver {
+    font-size: 1.2em;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+.btn-moneda { background-color: #28a745; color: white; }
+.btn-devolver { background-color: #dc3545; color: white; }
+
+
+/* --- Teclado --- */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 70px);
+    gap: 8px;
+    justify-content: center;
+    margin: 15px 0;
+}
+.keypad button {
+    font-size: 1.5em;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+}
+.keypad button.key-clear {
+    background-color: #ffc107;
+    grid-column: span 3;
+}
+.keypad button:hover { background-color: #e9e9e9; }
+
+/* --- ===== APARTADO DE LA PALABRA (AÑADIDO) ===== --- */
+.palabra-info {
+    width: 90%;
+    max-width: 600px;
+    margin: 15px 0;
+    text-align: center; /* Para centrar el botón */
+}
+#palabra-display {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    min-height: 40px;
+    font-family: monospace;
+    font-size: 1.1em;
+    word-wrap: break-word;
+    text-align: left; /* El texto de la palabra sí va a la izquierda */
+}
+/* ===== ESTILO PARA EL NUEVO BOTÓN (AÑADIDO) ===== */
+.reiniciar {
+    font-size: 1em;
+    padding: 8px 15px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #ffc107;
+    color: #333;
+    font-weight: bold;
+}
+
+/* --- Visualización de la Máquina --- */
+#vending-machine {
+    width: 450px;
+    height: 600px;
+    background-color: #d1d1d1;
+    border: 5px solid #555;
+    border-radius: 10px;
+    margin-top: 20px;
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.3);
+}
+.machine-top { padding: 10px; }
+.display-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px;
+}
+#machine-display {
+    background-color: #333;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 5px;
+    width: 300px;
+    text-align: center;
+    min-height: 25px;
+}
+#coin-slot-light {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #444;
+    transition: background-color 0.3s;
+}
+
+.grid-5x5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 5px;
+    width: 100%;
+    height: 400px;
+    background-color: #cce7ff;
+    border: 2px solid #888;
+    padding: 5px;
+    box-sizing: border-box;
+}
+.candy {
+    width: 100%;
+    height: 100%;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column; /* Para poner el precio debajo */
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1em;
+    background-color: #1d3557;
+    opacity: 1;
+    transition: opacity 0.3s, transform 0.2s;
+    line-height: 1.2;
+}
+.candy:nth-child(2n) { background-color: #e63946; }
+.candy:nth-child(3n) { background-color: #457b9d; }
+
+.candy .price {
+    font-size: 0.8em;
+    font-weight: normal;
+    background-color: rgba(0,0,0,0.3);
+    padding: 0 5px;
+    border-radius: 3px;
+    margin-top: 4px;
+}
+
+.machine-bottom {
+    background-color: #a1a1a1;
+    height: 100px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    top: -5px;
+}
+#dispense-bin {
+    width: 300px;
+    height: 70px;
+    background-color: #333;
+    border-radius: 5px;
+    color: white;
+    font-size: 1.2em;
+    text-align: center;
+    padding-top: 20px;
+    box-sizing: border-box;
+}
+#coin-return {
+    width: 100px;
+    height: 70px;
+    background-color: #777;
+    border: 2px solid #555;
+    text-align: center;
+    font-size: 0.9em;
+    padding-top: 10px;
+    box-sizing: border-box;
+}
+
+/* --- Estados y Animaciones --- */
+.luz-inactiva { background-color: #f00; }
+.luz-activa { background-color: #0f0; }
+
+.returning-coins { animation: flashReturn 0.5s 3; }
+@keyframes flashReturn { 50% { background-color: #fff; } }
+
+.falling-candy {
+    position: fixed;
+    z-index: 100;
+    transition: transform 1s ease-in, opacity 1s ease-in;
+}

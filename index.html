@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autómata: Máquina en Tiempo Real</title>
+    <link rel="stylesheet" href="/styless.css"> 
+</head>
+<body>
+    <h1>Máquina Expendedora</h1>
+
+    <p class="alfabeto">
+        <strong>Alfabeto</strong> { $1, $2, $5, $10, DEVOLVER, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 }
+    </p>
+
+    <h3>Controles</h3>
+    <div class="controles-globales">
+        <button id="btn-moneda-1" class="btn-moneda">$1</button>
+        <button id="btn-moneda-2" class="btn-moneda">$2</button>
+        <button id="btn-moneda-5" class="btn-moneda">$5</button>
+        <button id="btn-moneda-10" class="btn-moneda">$10</button>
+        <button id="btn-devolver" class="btn-devolver">DEVOLVER</button>
+    </div>
+    
+    <div id="keypad" class="keypad">
+        </div>
+
+    <div class="palabra-info">
+        <h3>Secuencia de Transacción:</h3>
+        <div id="palabra-display">[]</div>
+        <button id="btn-reiniciar-secuencia" class="reiniciar">Reiniciar Secuencia</button>
+    </div>
+
+    <div id="vending-machine">
+        <div class="machine-top">
+            <div class="display-panel">
+                <div id="machine-display">Inserte monedas</div>
+                <div id="coin-slot-light"></div>
+            </div>
+            <div id="glass-panel" class="grid-5x5">
+                </div>
+        </div>
+        <div class="machine-bottom">
+            <div id="dispense-bin"></div>
+            <div id="coin-return">Devolución</div>
+        </div>
+    </div>
+    
+    <script src="/logica.js"></script> 
+</body>
+</html>

@@ -21,9 +21,25 @@
         <button id="btn-moneda-10" class="btn-moneda">$10</button>
         <button id="btn-devolver" class="btn-devolver">DEVOLVER</button>
     </div>
-    
-    <div id="keypad" class="keypad">
+
+    <div id="main">     
+        <div id="vending-machine">
+            <div class="machine-top">
+                <div class="display-panel">
+                    <div id="machine-display">Inserte monedas</div>
+                    <div id="coin-slot-light"></div>
+                </div>
+                <div id="glass-panel" class="grid-5x5">
+                    </div>
+            </div>
+            <div class="machine-bottom">
+                <div id="dispense-bin"></div>
+                <div id="coin-return">Devolución</div>
+            </div>
         </div>
+
+        <div id="keypad" class="keypad"></div>
+    </div>
 
     <div class="palabra-info">
         <h3>Secuencia de Transacción:</h3>
@@ -31,21 +47,6 @@
         <button id="btn-reiniciar-secuencia" class="reiniciar">Reiniciar Secuencia</button>
     </div>
 
-    <div id="vending-machine">
-        <div class="machine-top">
-            <div class="display-panel">
-                <div id="machine-display">Inserte monedas</div>
-                <div id="coin-slot-light"></div>
-            </div>
-            <div id="glass-panel" class="grid-5x5">
-                </div>
-        </div>
-        <div class="machine-bottom">
-            <div id="dispense-bin"></div>
-            <div id="coin-return">Devolución</div>
-        </div>
-    </div>
-    
     <script src="./logica.js"></script> 
 </body>
 </html>

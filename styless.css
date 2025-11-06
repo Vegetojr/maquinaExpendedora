@@ -24,7 +24,7 @@ h1, h2, h3 { text-align: center; }
     flex-wrap: wrap;
     justify-content: center;
 }
-.btn-moneda, .btn-devolver {
+.btn-moneda, .btn-devolver,.btn-iniciar {
     font-size: 1.2em;
     padding: 10px 20px;
     border: none;
@@ -34,7 +34,7 @@ h1, h2, h3 { text-align: center; }
 }
 .btn-moneda { background-color: #28a745; color: white; }
 .btn-devolver { background-color: #dc3545; color: white; }
-
+.btn-iniciar{background-color: #1d3557; color:white;}
 
 /* --- Teclado --- */
 .keypad {

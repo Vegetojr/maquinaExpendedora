@@ -2,18 +2,20 @@
 document.addEventListener('DOMContentLoaded', () => 
 {
 
-    //dinero que tiene la maquina
+    //dinero que tiene la maquina 
     let credito = 0;
-    
+
     //aqui guardo la palabra antes de procesarla com si fuera un buffer 
     let codigoIngresado = '';
+    //para rastrear si la palabra es valida
+    let estadoAutomata = ''; 
 
     let historialAcciones = []; //La palabra que se va armando
-    let transaccionTerminada = true; //Para saber cuándo limpiar el historial
-
+    
     //donde se guardanara los precios de los productos
     const precios = {};
 
+    
     //esta variable es la que almacena todos los elementos del html para su facil accesso
     const dom = 
     {
@@ -22,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () =>
         btnMoneda5: document.getElementById('btn-moneda-5'),
         btnMoneda10: document.getElementById('btn-moneda-10'),
         btnDevolver: document.getElementById('btn-devolver'),
+        btnIniciar: document.getElementById('btn-iniciar'), 
         keypad: document.getElementById('keypad'),
         glassPanel: document.getElementById('glass-panel'),
         machineDisplay: document.getElementById('machine-display'),
@@ -39,21 +42,16 @@ document.addEventListener('DOMContentLoaded', () =>
     {
         //se caraga la maquina expendedora
         dom.glassPanel.innerHTML = '';
-        for (let i = 1; i <= 5; i++) { //filas
-            for (let j = 1; j <= 5; j++) 
-            { //columnas
+        for (let i = 1; i <= 5; i++) //filas
+        { 
+            for (let j = 1; j <= 5; j++) //columnas
+            { 
                 const productCode = `${i}${j}`;
-                
-                //se leadigna un precio al producto 
                 const precioProducto = Math.floor(Math.random() * 13) + 3;
                 precios[productCode] = precioProducto;
-
-                //aqui se le asigna el como id su candy-codigo 
                 const candy = document.createElement('div');
                 candy.className = 'candy';
                 candy.id = `candy-${productCode}`;
-                
-                //dentro de su caja se muetra el codigo del producto y su precio
                 candy.innerHTML = `${productCode} <span class="price">$${precioProducto}</span>`;
                 dom.glassPanel.appendChild(candy);
             }
@@ -66,16 +64,37 @@ document.addEventListener('DOMContentLoaded', () =>
         {
             const btn = document.createElement('button');
             btn.textContent = i;
-            // Cada botón llama a procesarComando inmediatamente
-            btn.addEventListener('click', () => procesarComando('DIGITO', i)); 
+            btn.addEventListener('click', () => agregarAPalabra('DIGITO', i)); 
             dom.keypad.appendChild(btn);
         }
         //cree el boton 0 fuera del loop
         const btn0 = document.createElement('button');
         btn0.textContent = 0;
-        btn0.addEventListener('click', () => procesarComando('DIGITO', 0));
+        btn0.addEventListener('click', () => agregarAPalabra('DIGITO', 0));
         dom.keypad.appendChild(btn0);
     }
+
+    //esto arma la palabra no ejecuta nada
+    function agregarAPalabra(tipo, valor)
+    {
+        let comando;
+        if (tipo === 'MONEDA')
+        { 
+            comando = `$${valor}`;
+        }
+        else if (tipo === 'DIGITO') 
+        {
+            comando = `${valor}`;
+        }
+        else 
+        {
+            comando = tipo;
+        }  
+        
+        historialAcciones.push(comando);
+        actualizarHistorial();
+    }
+
 
     //se actualiza la palabra que vamos formando en el automata
     function actualizarHistorial() 
@@ -83,91 +102,130 @@ document.addEventListener('DOMContentLoaded', () =>
         dom.palabraDisplay.textContent = JSON.stringify(historialAcciones);
     }
 
-    //una funcion para reiniciar las palabras manualmente y automaticamente
+    //una funcion para reiniciar las palabras manualmente
     function reiniciarHistorial() 
     {
         historialAcciones = [];
-        transaccionTerminada = true;
         actualizarHistorial(); 
     }
 
-    //en esta funcion el tipo es (dinero,posicon,devolver) y el valor es un numero
-    async function procesarComando(tipo, valor) 
+    
+    //funcion que lee la pablara que se inicia con el boton iniciar
+    async function probarSecuencia()
     {
-        //Este if primero es mejor explicado con un ejemplo asi que leeanlo XD
-        //supongamos que le meti 10 pesos y compre el 55. en la palabra apareceria [$10,5,5] y como la palabra fue aceptada transaccionTerminada es true
-        //Al iniciar otra compra. Digamos que quiero meter otros 10 pesos. entonces entra a este if limpia historialAcciones e indica transaccionTerminada como false para indicar que estamos en una nueva palabra
-        //y ya sigue con el resto de la funcion
-        if (transaccionTerminada) 
+        //inicia reinciiadno el automata excepto el dinero para que se pueda devolver en cualquier momento su cambio exacto
+        codigoIngresado = '';
+        estadoAutomata = 'x';
+        dom.dispenseBin.textContent = '';
+        actualizarVisualizacion();
+        await sleep(500);
+
+        //analiza la palabra incersion por incercion
+        for (const palabra of historialAcciones)
         {
-            historialAcciones = [];
-            transaccionTerminada = false; 
+            //si el paso anterior le regreso error o valido se crota
+            if(estadoAutomata === 'ERROR'||estadoAutomata==='VALIDO')
+            {
+                break;
+            }
+
+
+            //se lee el la palabra actial
+            await ejecutarComando(palabra);
+            actualizarVisualizacion();
+            await sleep(1000); 
         }
 
-        //logica de como se va armando la palabra
-        let comando;
-        if (tipo === 'MONEDA')
-        { 
-            comando = `$${valor}`;//dinero
+        // al final se meustra en la maquina expendedora si se acepto la palabra omno
+        if (estadoAutomata === 'ERROR')
+        {
+            dom.machineDisplay.textContent = 'SECUENCIA RECHAZADA';
+        }
+        else
+        {
+            dom.machineDisplay.textContent = 'SECUENCIA ACEPTADA';
+        }
+        
+        //aqui solo limpia para el siguinte analizis que se vaya a hacer
+        historialAcciones = [];
+    }
+
+    //lee la palabra actual ve que rollo con ella
+    async function ejecutarComando(comando)
+    {
+
+
+        let valor = 0;
+
+        //se muestra en la maquina expendedora cuando dinero metiste
+        if (comando.startsWith('$')) 
+        {
+            valor = parseInt(comando.substring(1));
             credito += valor;
             dom.dispenseBin.textContent = `+ $${valor}`;
-        }
-        else if (tipo === 'DIGITO') 
+            
+        } 
+        //te devuelve el dinero
+        else if (comando === 'DEVOLVER') 
         {
-            comando = `${valor}`;//posicion
-            //esto es el numero de posicion que se pone ya que llegue a 2 numeros dentro de la variable puede entrar el if que esta abajo para intentar hacer la compra 
-            if (codigoIngresado.length < 2) 
-            {
-                codigoIngresado += valor;
-            }
-        }
-        else 
-        {
-            comando = tipo;//Devolver
             if (credito > 0) 
             {
                 await animarDevolucion(`Devolviendo $${credito}...`);
                 credito = 0;
             }
-            //el buffer se limpia
             codigoIngresado = '';
-            transaccionTerminada = true; //y se indica que la palabra fue aceptda
-        }  
-        //se mete a historialAcciones
-        historialAcciones.push(comando);
-        actualizarHistorial(); // Actualiza el display de la palabra
-        actualizarVisualizacion();//
-
-        if (codigoIngresado.length === 2) 
+            estadoAutomata='VALIDO'
+        } 
+        //analisis de digitos
+        else 
         {
-            await intentarCompra(codigoIngresado);
-            codigoIngresado = '';
-            transaccionTerminada = true; 
-            actualizarVisualizacion();
+            //si es el primer digito ingresado solo se anade a codifoIngresado
+            valor = parseInt(comando);
+            if (codigoIngresado.length < 2) 
+            {
+                codigoIngresado += valor;
+            }
+
+            //si la palabra a formar ya tienen 2 numero se llama a la funcion intentarCompra
+            if (codigoIngresado.length === 2) 
+            {
+
+                await intentarCompra(codigoIngresado);
+                codigoIngresado = ''; 
+            }
         }
     }
     
-    // Lógica para manejar una compra una vez que el código está completo
-    async function intentarCompra(codigo) {
+    //logica para la comra
+    async function intentarCompra(codigo) 
+    {
         const costo = precios[codigo];
 
-        if (costo === undefined) {
+        if (costo === undefined) 
+        {
             dom.machineDisplay.textContent = `Código ${codigo} no existe.`;
             await sleep(1500);
+            estadoAutomata = 'ERROR'; 
             return;
         }
 
-        if (credito >= costo) {
+        if (credito >= costo) 
+        {
             credito -= costo;
+            estadoAutomata = 'VALIDO';
             await animarDispensa(codigo, costo);
-        } else {
+        } 
+        else 
+        {
             dom.machineDisplay.textContent = `Crédito insuficiente: $${credito}`;
             await sleep(1500);
+            estadoAutomata = 'ERROR';
         }
     }
 
     //pura anicmacion que claramente yo hice XD
-    function actualizarVisualizacion() {
+    function actualizarVisualizacion() 
+    {
         dom.light.className = credito > 0 ? 'luz-activa' : 'luz-inactiva';
 
         if (codigoIngresado.length === 0) {
@@ -180,12 +238,15 @@ document.addEventListener('DOMContentLoaded', () =>
             } 
             else 
             {
+
                 dom.machineDisplay.textContent = `Código: ${codigoIngresado}_`;
             }
         }
     }
 
-    async function animarDispensa(productCode, costo) {
+    async function animarDispensa(productCode, costo) 
+    {
+
         dom.machineDisplay.textContent = `Dispensando ${productCode}...`;
         const sourceCandy = document.getElementById(`candy-${productCode}`);
         if (!sourceCandy) return;
@@ -214,11 +275,11 @@ document.addEventListener('DOMContentLoaded', () =>
         
         dom.dispenseBin.textContent = `¡Gracias! (-$${costo})`;
         fallingCandy.remove();
-        // Hacemos que el dulce reaparezca (stock infinito)
         sourceCandy.style.opacity = 1; 
     }
 
-    async function animarDevolucion(mensaje) {
+    async function animarDevolucion(mensaje) 
+    {
         dom.machineDisplay.textContent = mensaje;
         dom.coinReturn.classList.add('returning-coins');
         await sleep(1500);
@@ -226,12 +287,15 @@ document.addEventListener('DOMContentLoaded', () =>
     }
 
     
-    dom.btnMoneda1.addEventListener('click', () => procesarComando('MONEDA', 1)); //'moneda' es el tipo y el numreo pues el valor
-    dom.btnMoneda2.addEventListener('click', () => procesarComando('MONEDA', 2));
-    dom.btnMoneda5.addEventListener('click', () => procesarComando('MONEDA', 5));
-    dom.btnMoneda10.addEventListener('click', () => procesarComando('MONEDA', 10));
-    dom.btnDevolver.addEventListener('click', () => procesarComando('DEVOLVER')); // y como devolver solo tiene tipo pero no tiene valor pues no se le pasa nada
+
+
+    dom.btnMoneda1.addEventListener('click', () => agregarAPalabra('MONEDA', 1));
+    dom.btnMoneda2.addEventListener('click', () => agregarAPalabra('MONEDA', 2));
+    dom.btnMoneda5.addEventListener('click', () => agregarAPalabra('MONEDA', 5));
+    dom.btnMoneda10.addEventListener('click', () => agregarAPalabra('MONEDA', 10));
+    dom.btnDevolver.addEventListener('click', () => agregarAPalabra('DEVOLVER'));
     dom.btnReiniciarSecuencia.addEventListener('click', reiniciarHistorial);
+    dom.btnIniciar.addEventListener('click', probarSecuencia);
     
 
     generarControles(); //la generacion del padkey y la maquina expendedora
